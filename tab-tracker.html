@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WhyThisTab 💻</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    font-family: 'Courier New', monospace;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 100%);
+    border-bottom: 1px solid #7c3aed33;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo { font-size: 18px; font-weight: bold; color: #a78bfa; letter-spacing: 1px; }
+  .logo-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+  .btn-new {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border: none; border-radius: 8px;
+    color: white; padding: 10px 18px;
+    font-size: 13px; cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold; transition: all 0.2s;
+  }
+  .btn-new.cancel { background: #4c1d95; }
+
+  /* MAIN */
+  .main { max-width: 640px; margin: 0 auto; padding: 20px 16px; }
+
+  /* TOAST */
+  .toast {
+    background: #1e1b4b; border: 1px solid #7c3aed;
+    border-radius: 8px; padding: 12px 16px;
+    margin-bottom: 16px; color: #a78bfa;
+    font-size: 13px; text-align: center; display: none;
+  }
+  .toast.show { display: block; }
+
+  /* ADD FORM */
+  .add-form {
+    background: #111827; border: 1px solid #7c3aed44;
+    border-radius: 12px; padding: 20px;
+    margin-bottom: 20px; display: none;
+  }
+  .add-form.show { display: block; }
+  .form-label {
+    font-size: 12px; color: #7c3aed;
+    letter-spacing: 2px; margin-bottom: 14px;
+  }
+  .form-input {
+    width: 100%; background: #0a0a0f;
+    border: 1px solid #374151; border-radius: 8px;
+    padding: 12px; color: #e2e8f0;
+    font-size: 13px; font-family: 'Courier New', monospace;
+    margin-bottom: 10px; outline: none;
+  }
+  .form-input:focus { border-color: #7c3aed; }
+  textarea.form-input { resize: none; }
+  .btn-save {
+    width: 100%; background: #1f2937;
+    border: none; border-radius: 8px;
+    color: #4b5563; padding: 12px;
+    font-size: 13px; font-weight: bold;
+    cursor: not-allowed; font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+  }
+  .btn-save.ready {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: white; cursor: pointer;
+  }
+
+  /* SEARCH + FILTER */
+  .controls {
+    display: flex; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .search-input {
+    flex: 1; min-width: 140px;
+    background: #111827; border: 1px solid #374151;
+    border-radius: 8px; padding: 10px 12px;
+    color: #e2e8f0; font-size: 12px;
+    font-family: 'Courier New', monospace; outline: none;
+  }
+  .filter-btn {
+    background: #111827; border: 1px solid #374151;
+    border-radius: 8px; color: #9ca3af;
+    padding: 10px 14px; font-size: 11px;
+    cursor: pointer; font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+  }
+  .filter-btn.active {
+    background: #7c3aed; border-color: #7c3aed; color: white;
+  }
+
+  /* STATS */
+  .stats {
+    display: flex; gap: 12px;
+    margin-bottom: 16px; padding: 12px 16px;
+    background: #111827; border-radius: 10px;
+    border: 1px solid #1f2937;
+  }
+  .stat { text-align: center; flex: 1; }
+  .stat-val { font-size: 20px; font-weight: bold; }
+  .stat-lbl { font-size: 10px; color: #6b7280; letter-spacing: 1px; }
+
+  /* TAB CARDS */
+  .tab-list { display: flex; flex-direction: column; gap: 10px; }
+  .tab-card {
+    background: #111827; border: 1px solid #7c3aed33;
+    border-radius: 12px; padding: 16px;
+    transition: all 0.2s;
+  }
+  .tab-card.done {
+    background: #0d1117; border-color: #1f2937; opacity: 0.6;
+  }
+  .tab-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 10px;
+  }
+  .tab-body { flex: 1; min-width: 0; }
+  .tab-url {
+    font-size: 13px; color: #a78bfa;
+    font-weight: bold; margin-bottom: 6px;
+    overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tab-url.done { text-decoration: line-through; }
+  .tab-reason {
+    font-size: 13px; color: #d1d5db;
+    line-height: 1.5; margin-bottom: 8px;
+  }
+  .tab-reason.done { color: #6b7280; }
+  .tab-time { font-size: 10px; color: #4b5563; letter-spacing: 0.5px; }
+  .tab-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .btn-done {
+    background: #1f2937; border: 1px solid #374151;
+    border-radius: 6px; color: #9ca3af;
+    padding: 6px 10px; font-size: 11px;
+    cursor: pointer; font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+  }
+  .btn-done.active {
+    background: #064e3b; border-color: #10b981; color: #10b981;
+  }
+  .btn-del {
+    background: #1f0a0a; border: 1px solid #7f1d1d;
+    border-radius: 6px; color: #ef4444;
+    padding: 6px 10px; font-size: 11px;
+    cursor: pointer; font-family: 'Courier New', monospace;
+  }
+
+  /* EMPTY */
+  .empty {
+    text-align: center; padding: 60px 20px;
+    color: #374151; display: none;
+  }
+  .empty.show { display: block; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; color: #6b7280; }
+
+  .footer {
+    text-align: center; margin-top: 40px;
+    font-size: 11px; color: #374151; letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">💻 WhyThisTab</div>
+    <div class="logo-sub" id="header-sub">0 tabs open in your brain</div>
+  </div>
+  <button class="btn-new" id="btn-new" onclick="toggleForm()">+ new tab</button>
+</div>
+
+<div class="main">
+  <div class="toast" id="toast"></div>
+
+  <!-- ADD FORM -->
+  <div class="add-form" id="add-form">
+    <div class="form-label">// SAVE A TAB</div>
+    <input class="form-input" id="input-url" placeholder="paste url or site name..." oninput="checkForm()"/>
+    <textarea class="form-input" id="input-reason" rows="3" placeholder="why did you open this tab?..." oninput="checkForm()"></textarea>
+    <button class="btn-save" id="btn-save" onclick="addTab()">save tab reason →</button>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <input class="search-input" id="search" placeholder="search tabs..." oninput="renderTabs()"/>
+    <button class="filter-btn active" id="f-all"     onclick="setFilter('all')">all</button>
+    <button class="filter-btn"        id="f-pending" onclick="setFilter('pending')">pending</button>
+    <button class="filter-btn"        id="f-done"    onclick="setFilter('done')">done</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats" id="stats" style="display:none">
+    <div class="stat">
+      <div class="stat-val" id="stat-total" style="color:#a78bfa">0</div>
+      <div class="stat-lbl">total</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-pending" style="color:#f59e0b">0</div>
+      <div class="stat-lbl">pending</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-done" style="color:#10b981">0</div>
+      <div class="stat-lbl">done</div>
+    </div>
+  </div>
+
+  <!-- TAB LIST -->
+  <div class="tab-list" id="tab-list"></div>
+
+  <!-- EMPTY STATE -->
+  <div class="empty" id="empty">
+    <div class="empty-icon">🗂️</div>
+    <div class="empty-text" id="empty-text">no tabs saved yet.<br/>add your first one above 👆</div>
+  </div>
+
+  <div class="footer">built by a girl who codes 🖤</div>
+</div>
+
+<script>
+  let tabs   = [];
+  let filter = "all";
+  let formOpen = false;
+
+  // ── HELPERS ───────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  function timeAgo(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1)  return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24)  return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  }
+
+  function getDomain(u) {
+    try {
+      const url = u.startsWith("http") ? u : "https://" + u;
+      return new URL(url).hostname.replace("www.", "");
+    } catch { return u; }
+  }
+
+  // ── FORM ──────────────────────────────────────────
+  function toggleForm() {
+    formOpen = !formOpen;
+    document.getElementById("add-form").classList.toggle("show", formOpen);
+    const btn = document.getElementById("btn-new");
+    btn.textContent = formOpen ? "✕ cancel" : "+ new tab";
+    btn.classList.toggle("cancel", formOpen);
+    if (!formOpen) {
+      document.getElementById("input-url").value = "";
+      document.getElementById("input-reason").value = "";
+      checkForm();
+    }
+  }
+
+  function checkForm() {
+    const url    = document.getElementById("input-url").value.trim();
+    const reason = document.getElementById("input-reason").value.trim();
+    const btn    = document.getElementById("btn-save");
+    btn.className = "btn-save" + (url && reason ? " ready" : "");
+  }
+
+  function addTab() {
+    const url    = document.getElementById("input-url").value.trim();
+    const reason = document.getElementById("input-reason").value.trim();
+    if (!url || !reason) return;
+    tabs.unshift({ id: Date.now(), url, reason, createdAt: new Date().toISOString(), done: false });
+    toggleForm();
+    showToast("tab saved! 💻");
+    renderTabs();
+  }
+
+  // ── FILTER ────────────────────────────────────────
+  function setFilter(f) {
+    filter = f;
+    ["all","pending","done"].forEach(n => {
+      document.getElementById(`f-${n}`).className =
+        "filter-btn" + (n === f ? " active" : "");
+    });
+    renderTabs();
+  }
+
+  // ── TOGGLE DONE ───────────────────────────────────
+  function toggleDone(id) {
+    const tab = tabs.find(t => t.id === id);
+    if (tab) tab.done = !tab.done;
+    renderTabs();
+  }
+
+  // ── DELETE ────────────────────────────────────────
+  function deleteTab(id) {
+    tabs = tabs.filter(t => t.id !== id);
+    showToast("removed 🗑️");
+    renderTabs();
+  }
+
+  // ── RENDER ────────────────────────────────────────
+  function renderTabs() {
+    const search  = document.getElementById("search").value.toLowerCase();
+    const pending = tabs.filter(t => !t.done).length;
+
+    // header subtitle
+    document.getElementById("header-sub").textContent =
+      `${pending} tab${pending !== 1 ? "s" : ""} open in your brain`;
+
+    // stats
+    const statsEl = document.getElementById("stats");
+    if (tabs.length > 0) {
+      statsEl.style.display = "flex";
+      document.getElementById("stat-total").textContent   = tabs.length;
+      document.getElementById("stat-pending").textContent = pending;
+      document.getElementById("stat-done").textContent    = tabs.length - pending;
+    } else {
+      statsEl.style.display = "none";
+    }
+
+    // filter + search
+    const filtered = tabs.filter(t => {
+      const match = t.url.toLowerCase().includes(search) ||
+                    t.reason.toLowerCase().includes(search);
+      if (filter === "done")    return t.done && match;
+      if (filter === "pending") return !t.done && match;
+      return match;
+    });
+
+    const list  = document.getElementById("tab-list");
+    const empty = document.getElementById("empty");
+    list.innerHTML = "";
+
+    if (filtered.length === 0) {
+      empty.classList.add("show");
+      document.getElementById("empty-text").innerHTML =
+        tabs.length === 0
+          ? "no tabs saved yet.<br/>add your first one above 👆"
+          : "nothing matches that filter";
+    } else {
+      empty.classList.remove("show");
+      filtered.forEach(tab => {
+        const card = document.createElement("div");
+        card.className = "tab-card" + (tab.done ? " done" : "");
+        card.innerHTML = `
+          <div class="tab-top">
+            <div class="tab-body">
+              <div class="tab-url ${tab.done ? "done" : ""}">🔗 ${getDomain(tab.url)}</div>
+              <div class="tab-reason ${tab.done ? "done" : ""}">${tab.reason}</div>
+              <div class="tab-time">${timeAgo(tab.createdAt)}</div>
+            </div>
+            <div class="tab-actions">
+              <button class="btn-done ${tab.done ? "active" : ""}" onclick="toggleDone(${tab.id})">
+                ${tab.done ? "✓ done" : "done?"}
+              </button>
+              <button class="btn-del" onclick="deleteTab(${tab.id})">delete</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+  }
+
+  // init
+  renderTabs();
+</script>
+</body>
+</html>
